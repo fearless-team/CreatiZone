@@ -2,7 +2,7 @@
 class Database
 {
     private string $host    = 'localhost';
-    private string $dbname  = 'creatizone';
+    private string $dbname  = 'challenge_hub';
     private string $user    = 'root';
     private string $pass    = '';
     private string $charset = 'utf8mb4';

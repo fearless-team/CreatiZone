@@ -101,7 +101,7 @@ function renderFlash(): void {
     <!-- FORMULAIRE -->
     <div class="form-col">
       <div class="form-card">
-        <?php $alreadyDone = !empty($_SESSION['submitted_challenge_' . $challenge_id]); ?>
+        <?php $alreadyDone = $alreadyDone ?? false; ?>
 
         <?php if ($alreadyDone): ?>
           <div class="ty-state">

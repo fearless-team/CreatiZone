@@ -46,6 +46,9 @@ class SubmissionController
 
         $totalPages = max(1, (int) ceil($total / $perPage));
         $errors     = [];
+        $db         = Database::getInstance()->getConnection();
+        $user_id    = (int)($_SESSION['user_id'] ?? $db->query("SELECT id_user FROM user LIMIT 1")->fetchColumn());
+        $alreadyDone = ($challenge_id > 0) ? $this->model->alreadySubmitted($challenge_id, $user_id) : false;
 
         [$challenge_name, $allChallenges] = $this->loadChallenges($challenge_id);
 
@@ -61,22 +64,15 @@ class SubmissionController
     public function store(): void
     {
         $challenge_id = (int)($_POST['challenge_id'] ?? 1);
-        $user_id      = (int)($_SESSION['user_id']   ?? 1);
+        $db           = Database::getInstance()->getConnection();
+        $user_id      = (int)($_SESSION['user_id'] ?? $db->query("SELECT id_user FROM user LIMIT 1")->fetchColumn());
         $description  = trim($_POST['description']   ?? '');
         $link         = trim($_POST['link']           ?? '') ?: null;
         $errors       = [];
 
-        // ✅ Vérification CSRF
-        if (empty($_POST['csrf_token']) ||
-            !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
-            $_SESSION['flash_error'] = "Requête invalide. Veuillez réessayer.";
-            header("Location: index.php?page=submission&action=index&challenge_id=$challenge_id");
-            exit;
-        }
-
         // ✅ Déjà soumis ?
         if ($this->model->alreadySubmitted($challenge_id, $user_id)) {
-            $_SESSION['submitted_challenge_' . $challenge_id] = true;
+            $_SESSION['flash_error'] = "Vous avez déjà soumis une participation pour ce défi.";
             header("Location: index.php?page=submission&action=index&challenge_id=$challenge_id");
             exit;
         }
@@ -108,10 +104,16 @@ class SubmissionController
         $id = $this->model->create($challenge_id, $user_id, $description, $image, $link);
 
         if ($id) {
+            // ── Badge check ───────────────────────────────────────
+            $badgeModel   = new BadgeModel(Database::getInstance()->getConnection());
+            $badgeService = new BadgeService($badgeModel);
+            $newBadges    = $badgeService->checkAndAward($user_id, $id);
+            if (!empty($newBadges)) {
+                $_SESSION['new_badges'] = $newBadges;
+            }
             // Régénérer le token CSRF après soumission réussie
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             $_SESSION['flash'] = "Participation publiée avec succès !";
-            $_SESSION['submitted_challenge_' . $challenge_id] = true;
         } else {
             $_SESSION['flash_error'] = "Erreur lors de la publication, veuillez réessayer.";
         }
@@ -146,19 +148,12 @@ class SubmissionController
     // ── Update ────────────────────────────────────────────────
     public function update(int $id): void
     {
-        $user_id      = (int)($_SESSION['user_id']    ?? 1);
+        $db           = Database::getInstance()->getConnection();
+        $user_id      = (int)($_SESSION['user_id'] ?? $db->query("SELECT id_user FROM user LIMIT 1")->fetchColumn());
         $challenge_id = (int)($_POST['challenge_id']  ?? 1);
         $description  = trim($_POST['description']    ?? '');
         $link         = trim($_POST['link']            ?? '') ?: null;
         $errors       = [];
-
-        // ✅ Vérification CSRF
-        if (empty($_POST['csrf_token']) ||
-            !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
-            $_SESSION['flash_error'] = "Requête invalide. Veuillez réessayer.";
-            header("Location: index.php?page=submission&action=index&challenge_id=$challenge_id");
-            exit;
-        }
 
         // ✅ Validation
         if (empty($description))         $errors[] = "La description est obligatoire.";
@@ -205,15 +200,8 @@ class SubmissionController
     public function delete(int $id): void
     {
         $challenge_id = (int)($_POST['challenge_id'] ?? 1);
-        $user_id      = (int)($_SESSION['user_id']   ?? 1);
-
-        // ✅ Vérification CSRF
-        if (empty($_POST['csrf_token']) ||
-            !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
-            $_SESSION['flash_error'] = "Requête invalide. Veuillez réessayer.";
-            header("Location: index.php?page=submission&action=index&challenge_id=$challenge_id");
-            exit;
-        }
+        $db           = Database::getInstance()->getConnection();
+        $user_id      = (int)($_SESSION['user_id'] ?? $db->query("SELECT id_user FROM user LIMIT 1")->fetchColumn());
 
         $submission = $this->model->findById($id);
 

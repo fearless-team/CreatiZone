@@ -15,6 +15,8 @@ if (empty($_SESSION['csrf_token'])) {
 $root = 'C:/xampp/htdocs/creatizone';
 require_once $root . '/config.php';
 require_once $root . '/model/submissionmod.php';
+require_once $root . '/model/badgemod.php';
+require_once $root . '/service/badgeservice.php';
 require_once $root . '/controller/submissioncon.php';
 
 $page   = $_GET['page']   ?? $_POST['page']   ?? 'submission';
