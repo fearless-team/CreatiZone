@@ -6,9 +6,9 @@ class Challenge {
         $this->pdo = $pdo;
     }
 
-    public function create_challenge($titre, $description, $categorie, $deadline, $image, $user_id) {
-        $sql = "INSERT INTO challenge (titre, description, categorie, deadline, image, user_id)
-                VALUES (:titre, :description, :categorie, :deadline, :image, :user_id)";
+    public function create_challenge($titre, $description, $categorie, $deadline, $image, $id_user) {
+        $sql = "INSERT INTO challenge (titre, description, categorie, deadline, image, id_user)
+                VALUES (:titre, :description, :categorie, :deadline, :image, :id_user)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':titre'       => $titre,
@@ -16,51 +16,51 @@ class Challenge {
             ':categorie'   => $categorie,
             ':deadline'    => $deadline,
             ':image'       => $image,
-            ':user_id'     => $user_id
+            ':id_user'     => $id_user  
         ]);
     }
 
-    public function modifier_challenge($id, $titre, $description, $categorie, $deadline, $image, $user_id) {
+    public function modifier_challenge($id_challenge, $titre, $description, $categorie, $deadline, $image, $id_user) {
         $sql = "UPDATE challenge
                 SET titre = :titre, description = :description, categorie = :categorie,
                     deadline = :deadline, image = :image
-                WHERE id = :id AND user_id = :user_id";
+                WHERE id_challenge = :id_challenge AND id_user = :id_user"; 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':titre'       => $titre,
-            ':description' => $description,
-            ':categorie'   => $categorie,
-            ':deadline'    => $deadline,
-            ':image'       => $image,
-            ':id'          => $id,
-            ':user_id'     => $user_id
+            ':titre'        => $titre,
+            ':description'  => $description,
+            ':categorie'    => $categorie,
+            ':deadline'     => $deadline,
+            ':image'        => $image,
+            ':id_challenge' => $id_challenge, 
+            ':id_user'      => $id_user       
         ]);
     }
 
-    public function supprimer_challenge($id, $user_id) {
-        $sql = "DELETE FROM challenge WHERE id = :id AND user_id = :user_id";
+    public function supprimer_challenge($id_challenge, $id_user) {
+        $sql = "DELETE FROM challenge 
+                WHERE id_challenge = :id_challenge AND id_user = :id_user"; 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $id, ':user_id' => $user_id]);
+        $stmt->execute([
+            ':id_challenge' => $id_challenge,
+            ':id_user'      => $id_user
+        ]);
     }
-
-    public function getChallengeByid($id) {
-        $sql  = "SELECT * FROM challenge WHERE id = :id";
+    public function getChallengeByid($id_challenge) {
+        $sql  = "SELECT * FROM challenge WHERE id_challenge = :id_challenge"; 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $id]);
+        $stmt->execute([':id_challenge' => $id_challenge]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
     public function getAllChallenges() {
         $sql  = "SELECT * FROM challenge ORDER BY deadline ASC";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    // ── Compter les participants d'un défi ──────────────────
-    public function countParticipants($challenge_id) {
-        $sql  = "SELECT COUNT(*) as nb FROM participation WHERE challenge_id = :challenge_id";
+    public function countParticipants($id_challenge) {
+        $sql  = "SELECT COUNT(*) as nb FROM submissions WHERE id_challenge = :id_challenge"; 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':challenge_id' => $challenge_id]);
+        $stmt->execute([':id_challenge' => $id_challenge]);
         return (int)$stmt->fetch(PDO::FETCH_ASSOC)['nb'];
     }
 }
