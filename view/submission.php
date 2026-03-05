@@ -156,6 +156,7 @@ function renderFlash(): void {
               </div>
 
               <div class="form-actions">
+                  <a href="comment.php"><button class="btn btn-primary">commenter</button></a>
                 <button type="submit" class="btn btn-primary" id="submitBtn">
                   Publier ma participation
                 </button>
