@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votes — Classement des Participations</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c1: #E7F5DC; --c2: #CFE1B9; --c3: #B6C99B;
+    --c4: #98A77C; --c5: #88976C; --c6: #728156;
+    --dark1: #0F2A1D; --dark2: #375534; --dark3: #6B9071;
+    --light1: #AEC3B0; --light2: #E3EED4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--c2) 0%, var(--c3) 40%, var(--dark3) 100%);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+  }
+
+  .container { width: 100%; max-width: 720px; }
+
+  /* ─── HEADER ─── */
+  .page-header {
+    background: var(--dark1);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 32px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, var(--dark3) 0%, transparent 70%);
+    opacity: 0.4;
+  }
+  .page-tag {
+    display: inline-block;
+    background: var(--dark3);
+    color: var(--light2);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--light2);
+    line-height: 1.3;
+  }
+  .page-subtitle {
+    margin-top: 8px;
+    color: var(--light1);
+    font-size: 13px;
+  }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    background: var(--dark2);
+    padding: 14px 32px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat { color: var(--c2); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .stat strong { color: var(--light2); font-size: 16px; }
+
+  /* ─── BODY ─── */
+  .body-section {
+    background: var(--light2);
+    border-radius: 0 0 24px 24px;
+    padding: 28px 32px;
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: var(--c2);
+    padding: 6px;
+    border-radius: 16px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--dark2);
+    transition: all .2s;
+  }
+  .tab.active { background: var(--dark2); color: var(--light2); }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--dark1);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--c3); }
+
+  /* ─── PARTICIPATION CARD ─── */
+  .participation-card {
+    background: white;
+    border-radius: 18px;
+    border: 1.5px solid transparent;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: border-color .2s, transform .2s;
+    animation: fadeSlide .35s ease both;
+  }
+  .participation-card:hover { border-color: var(--c3); transform: translateX(4px); }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-top { display: flex; align-items: flex-start; gap: 14px; }
+  .card-avatar {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 15px;
+    color: white;
+  }
+  .card-info { flex: 1; }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--dark1);
+    margin-bottom: 4px;
+  }
+  .card-meta {
+    font-size: 12px;
+    color: var(--c4);
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+
+  /* ─── LINK ─── */
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--dark3);
+    text-decoration: none;
+    background: var(--c1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: background .2s;
+  }
+  .card-link:hover { background: var(--c2); }
+
+  /* ─── STAR RATING ─── */
+  .star-rating {
+    display: flex;
+    gap: 4px;
+    margin-top: 14px;
+    align-items: center;
+  }
+  .star {
+    font-size: 26px;
+    cursor: pointer;
+    color: #ddd;
+    transition: color .15s, transform .15s;
+    line-height: 1;
+    user-select: none;
+  }
+  .star:hover, .star.hovered { color: #f4c430; transform: scale(1.15); }
+  .star.selected { color: #f4c430; }
+  .star-label { font-size: 12px; color: var(--c4); margin-left: 8px; }
+
+  .vote-btn {
+    margin-top: 14px;
+    padding: 9px 22px;
+    border-radius: 20px;
+    border: none;
+    background: var(--dark2);
+    color: var(--light2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .vote-btn:hover { background: var(--dark1); transform: translateY(-1px); }
+  .vote-btn:disabled { background: var(--c3); cursor: not-allowed; transform: none; }
+
+  .already-voted {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--dark3);
+    background: var(--c1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: var(--dark1);
+    color: var(--light2);
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── CLASSEMENT ─── */
+  #tab-classement { display: none; }
+
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    border: 1.5px solid transparent;
+    transition: all .2s;
+    animation: fadeSlide .35s ease both;
+  }
+  .rank-item:hover { border-color: var(--c3); transform: translateX(4px); }
+
+  .rank-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--c3);
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .rank-number.gold   { color: #f4c430; }
+  .rank-number.silver { color: #aaa; }
+  .rank-number.bronze { color: #cd7f32; }
+
+  .rank-info { flex: 1; }
+  .rank-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--dark1); }
+  .rank-author { font-size: 12px; color: var(--c4); margin-top: 2px; }
+
+  .rank-score { text-align: right; flex-shrink: 0; }
+  .score-stars { font-size: 18px; color: #f4c430; }
+  .score-val { font-size: 11px; color: var(--c5); margin-top: 2px; }
+
+  .loading { text-align: center; padding: 40px; color: var(--c4); font-size: 14px; }
+  .error-msg {
+    text-align: center; padding: 20px; color: #e57373;
+    font-size: 14px; background: #ffeaea; border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-tag">🗳️ Votes & Classement</div>
+    <h1 class="page-title">Système de Vote<br>des Participations</h1>
+    <p class="page-subtitle">Notez les participations et découvrez le classement</p>
+  </div>
+
+  <!-- STATS BAR
+       Sources : vote.php?action=stats
+       Colonnes BDD : total_users, total_defis, total_participations, total_votes, avg_score
+  -->
+  <div class="stats-bar">
+    <div class="stat">🏆 <strong id="total-participations">—</strong> participations</div>
+    <div class="stat">🗳️ <strong id="total-votes">—</strong> votes</div>
+    <div class="stat">⭐ <strong id="avg-score">—</strong> note moyenne</div>
+  </div>
+
+  <div class="body-section">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'voter')">🗳️ Voter</button>
+      <button class="tab"        onclick="switchTab(this,'classement')">🏆 Classement</button>
+    </div>
+
+    <!-- TAB VOTER -->
+    <div id="tab-voter">
+      <div class="section-label">Participations à noter</div>
+      <div id="participations-list">
+        <div class="loading">Chargement des participations…</div>
+      </div>
+    </div>
+
+    <!-- TAB CLASSEMENT -->
+    <div id="tab-classement">
+      <div class="section-label">Classement général</div>
+      <div id="classement-list">
+        <div class="loading">Chargement du classement…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ⚙️  CONFIG
+   - API        : chemin vers vote.php
+   - CURRENT_USER_ID : INT — id_user depuis la session PHP
+     En production remplacer par : const CURRENT_USER_ID = <?= $_SESSION['id_user'] ?>;
+══════════════════════════════════════════════════════ */
+const API             = 'vote.php';
+const CURRENT_USER_ID = 1; // ← remplacer par la vraie session PHP
+
+const COLORS = ['#375534','#6B9071','#728156','#98A77C','#88976C','#0F2A1D'];
+const LABELS = ['','Mauvais','Passable','Correct','Bien','Excellent'];
+
+/* ══════════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════════ */
+function switchTab(btn, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-voter').style.display      = tab === 'voter'      ? '' : 'none';
+  document.getElementById('tab-classement').style.display = tab === 'classement' ? '' : 'none';
+  if (tab === 'classement') loadClassement();
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ══════════════════════════════════════════════════════
+   STATS  →  GET vote.php?action=stats
+   Réponse attendue (handleStats dans vote.php) :
+   {
+     total_users, total_defis,
+     total_participations,   ← COUNT(*) FROM submissions
+     total_votes,            ← COUNT(*) FROM votes
+     avg_score               ← AVG(note) FROM votes
+   }
+══════════════════════════════════════════════════════ */
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}?action=stats`);
+    const d = await r.json();
+    document.getElementById('total-participations').textContent = d.total_participations ?? '—';
+    document.getElementById('total-votes').textContent          = d.total_votes          ?? '—';
+    document.getElementById('avg-score').textContent            = d.avg_score
+      ? parseFloat(d.avg_score).toFixed(1) + ' ⭐'
+      : '—';
+  } catch(e) {
+    console.warn('Stats non disponibles :', e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   PARTICIPATIONS  →  GET vote.php?action=participations&user_id=X
+   Réponse attendue (handleParticipations dans vote.php) :
+   [
+     {
+       id,                  ← submissions.id_submission
+       description,         ← submissions.description
+       link,                ← submissions.link
+       created_at,          ← submissions.created_at
+       challenge_titre,     ← challenge.titre  (JOIN challenge)
+       nom,                 ← user.nom         (JOIN user)
+       prenom,              ← user.prenom      (JOIN user)
+       note_moyenne,        ← AVG(votes.note)
+       nb_votes,            ← COUNT(votes.id)
+       user_note            ← note de l'utilisateur courant (0 si pas voté)
+     }, …
+   ]
+══════════════════════════════════════════════════════ */
+async function loadParticipations() {
+  const list = document.getElementById('participations-list');
+  try {
+    const r    = await fetch(`${API}?action=participations&user_id=${CURRENT_USER_ID}`);
+    const data = await r.json();
+
+    if (!Array.isArray(data) || !data.length) {
+      list.innerHTML = '<div class="loading">Aucune participation disponible.</div>';
+      return;
+    }
+
+    list.innerHTML = data.map((p, i) => {
+      /*
+        ✅ Champs corrigés selon le schéma BDD :
+           p.nom + p.prenom  (au lieu de p.auteur)
+           p.challenge_titre (au lieu de p.titre)
+           p.created_at      (au lieu de p.date_soumission)
+           p.id              = submissions.id_submission
+           p.user_note       = 0 si pas encore voté, sinon 1-5
+           p.link            = URL optionnelle de la soumission
+      */
+      const fullName  = `${p.prenom || ''} ${p.nom || ''}`.trim() || 'Anonyme';
+      const initials  = fullName.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+      const color     = COLORS[i % COLORS.length];
+      const voted     = parseInt(p.user_note) > 0;
+      const dateStr   = p.created_at ? p.created_at.split(' ')[0] : '—'; // "YYYY-MM-DD HH:mm:ss" → "YYYY-MM-DD"
+
+      return `
+      <div class="participation-card" data-id="${p.id}" style="animation-delay:${i * 0.06}s">
+        <div class="card-top">
+          <div class="card-avatar" style="background:${color}">${initials}</div>
+          <div class="card-info">
+            <!-- challenge_titre remplace l'ancien "titre" -->
+            <div class="card-title">${p.challenge_titre || 'Défi sans titre'}</div>
+            <div class="card-meta">
+              <!-- nom + prenom remplacent l'ancien "auteur" -->
+              <span>👤 ${fullName}</span>
+              <!-- created_at remplace l'ancien "date_soumission" -->
+              <span>📅 ${dateStr}</span>
+              <span>⭐ ${p.note_moyenne ? parseFloat(p.note_moyenne).toFixed(1) : '—'} (${p.nb_votes} vote${p.nb_votes != 1 ? 's' : ''})</span>
+            </div>
+          </div>
+        </div>
+
+        ${p.link ? `<a class="card-link" href="${p.link}" target="_blank" rel="noopener">🔗 Voir la soumission</a>` : ''}
+
+        ${voted
+          ? `<div class="already-voted">✅ Vous avez voté : ${'⭐'.repeat(parseInt(p.user_note))} (${p.user_note}/5)</div>`
+          : `
+          <div class="star-rating" data-pid="${p.id}">
+            ${[1,2,3,4,5].map(s =>
+              `<span class="star" data-val="${s}"
+                onclick="selectStar(this, ${p.id})"
+                onmouseover="hoverStar(this)"
+                onmouseout="unhoverStar(this, ${p.id})">★</span>`
+            ).join('')}
+            <span class="star-label" id="label-${p.id}">Sélectionnez une note</span>
+          </div>
+          <button class="vote-btn" id="btn-${p.id}" onclick="submitVote(${p.id})" disabled>
+            Voter →
+          </button>
+        `}
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    list.innerHTML = '<div class="error-msg">❌ Impossible de charger les participations. Vérifiez que vote.php est accessible.</div>';
+    console.error(e);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   INTERACTIONS ÉTOILES
+══════════════════════════════════════════════════════ */
+const selectedStars = {};
+
+function hoverStar(el) {
+  const val = parseInt(el.dataset.val);
+  el.closest('.star-rating').querySelectorAll('.star').forEach(s => {
+    s.classList.toggle('hovered', parseInt(s.dataset.val) <= val);
+  });
+}
+
+function unhoverStar(el, pid) {
+  const selected = selectedStars[pid] || 0;
+  el.closest('.star-rating').querySelectorAll('.star').forEach(s => {
+    s.classList.remove('hovered');
+    s.classList.toggle('selected', parseInt(s.dataset.val) <= selected);
+  });
+}
+
+function selectStar(el, pid) {
+  const val = parseInt(el.dataset.val);
+  selectedStars[pid] = val;
+  el.closest('.star-rating').querySelectorAll('.star').forEach(s => {
+    s.classList.toggle('selected', parseInt(s.dataset.val) <= val);
+  });
+  document.getElementById(`label-${pid}`).textContent = LABELS[val];
+  document.getElementById(`btn-${pid}`).disabled = false;
+}
+
+/* ══════════════════════════════════════════════════════
+   SOUMETTRE UN VOTE  →  POST vote.php
+   Body JSON envoyé (correspond exactement à handleVoter) :
+   {
+     action:           "voter",
+     participation_id: INT   ← submissions.id_submission
+     user_id:          INT   ← user.id_user  (CURRENT_USER_ID)
+     note:             INT   ← 1 à 5
+   }
+   Réponse attendue :
+   {
+     success:      true,
+     message:      "Vote enregistré avec succès.",
+     note:         INT,
+     note_moyenne: FLOAT,
+     nb_votes:     INT
+   }
+══════════════════════════════════════════════════════ */
+async function submitVote(pid) {
+  const note = selectedStars[pid];
+  if (!note) return;
+
+  const btn = document.getElementById(`btn-${pid}`);
+  btn.disabled    = true;
+  btn.textContent = 'Envoi…';
+
+  try {
+    const r = await fetch(API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:           'voter',
+        participation_id: pid,              // ← submissions.id_submission (INT)
+        user_id:          CURRENT_USER_ID,  // ← user.id_user (INT)
+        note:             note              // ← 1 à 5
+      })
+    });
+    const d = await r.json();
+
+    if (d.success) {
+      showToast('✅ Vote enregistré ! Merci.');
+      loadParticipations(); // recharger pour afficher "déjà voté"
+      loadStats();
+    } else {
+      showToast('⚠️ ' + (d.message || 'Erreur lors du vote.'));
+      btn.disabled    = false;
+      btn.textContent = 'Voter →';
+    }
+  } catch(e) {
+    showToast('❌ Erreur réseau.');
+    btn.disabled    = false;
+    btn.textContent = 'Voter →';
+    console.error(e);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   CLASSEMENT  →  GET vote.php?action=classement
+   Réponse attendue (handleClassement dans vote.php) :
+   [
+     {
+       id,               ← submissions.id_submission
+       challenge_titre,  ← challenge.titre
+       nom,              ← user.nom
+       prenom,           ← user.prenom
+       note_moyenne,     ← AVG(votes.note)
+       nb_votes          ← COUNT(votes.id)
+     }, …
+   ]
+══════════════════════════════════════════════════════ */
+async function loadClassement() {
+  const list = document.getElementById('classement-list');
+  list.innerHTML = '<div class="loading">Chargement…</div>';
+
+  try {
+    const r    = await fetch(`${API}?action=classement`);
+    const data = await r.json();
+
+    if (!Array.isArray(data) || !data.length) {
+      list.innerHTML = '<div class="loading">Aucun vote enregistré pour le moment.</div>';
+      return;
+    }
+
+    const medals = ['gold', 'silver', 'bronze'];
+
+    list.innerHTML = data.map((p, i) => {
+      /*
+        ✅ Champs corrigés :
+           p.challenge_titre  (au lieu de p.titre)
+           p.nom + p.prenom   (au lieu de p.auteur)
+      */
+      const fullName   = `${p.prenom || ''} ${p.nom || ''}`.trim() || 'Anonyme';
+      const medalClass = medals[i] || '';
+      const stars      = '⭐'.repeat(Math.round(parseFloat(p.note_moyenne) || 0));
+
+      return `
+      <div class="rank-item" style="animation-delay:${i * 0.06}s">
+        <div class="rank-number ${medalClass}">${i + 1}</div>
+        <div class="rank-info">
+          <!-- challenge_titre remplace l'ancien "titre" -->
+          <div class="rank-title">${p.challenge_titre || 'Défi sans titre'}</div>
+          <!-- nom + prenom remplacent l'ancien "auteur" -->
+          <div class="rank-author">👤 ${fullName} · ${p.nb_votes} vote${p.nb_votes != 1 ? 's' : ''}</div>
+        </div>
+        <div class="rank-score">
+          <div class="score-stars">${stars}</div>
+          <div class="score-val">${parseFloat(p.note_moyenne || 0).toFixed(2)} / 5</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    list.innerHTML = '<div class="error-msg">❌ Impossible de charger le classement.</div>';
+    console.error(e);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+loadStats();
+loadParticipations();
+</script>
+</body>
+</html>
