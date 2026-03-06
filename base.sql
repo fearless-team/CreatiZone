@@ -67,4 +67,4 @@ CREATE TABLE comments (
     FOREIGN KEY (id_user)
         REFERENCES user(id_user)
         ON DELETE CASCADE
-)
+);
