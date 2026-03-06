@@ -99,14 +99,8 @@ function handleParticipations(): void {
         LEFT JOIN votes v     ON v.participation_id = s.id_submission
         LEFT JOIN votes uv    ON uv.participation_id = s.id_submission AND uv.id_user = :uid
         GROUP BY s.id_submission
-... (92lignes restantes)
 
-message.txt
-8 Ko
-﻿
-ghaithoues
-ghaith0135
-<?php
+
 define('DB_HOST',    'localhost');
 define('DB_NAME',    'challenge_hub'); // ✅
 define('DB_USER',    'root');
@@ -298,3 +292,4 @@ function handleVoter(array $body): void {
         'nb_votes'     => $result['nb_votes'],
     ], 201);
 }
+?>
